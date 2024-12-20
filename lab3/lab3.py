@@ -15,6 +15,7 @@ m3 = 1
 L = 1
 R = 0.5
 c = 10
+phi_0, psi_0, d_phi_0, d_psi_0 = 0, 0, 0.5, -0.5
 Nv = 3
 time_range = np.linspace(0, available_time, 100 * available_time)
 
@@ -23,6 +24,7 @@ def rotate_2d(x, y, alpha):
     """Поворот в двухмерном пространстве"""
     return x * np.cos(alpha) - y * np.sin(alpha), x * np.sin(alpha) + y * np.cos(alpha)
 
+
 def odesys(y, t):
     """Функция для численного решения системы ДУ"""
     a11 = (m1 / 3 + m2 + m3) * L
@@ -30,8 +32,8 @@ def odesys(y, t):
     a21 = m3 * L * np.cos(y[0] + y[1])
     a22 = (m2 / 2 + m3) * R
 
-    b1 = (y[3] ** 2) * m3 * R * np.sin(y[0] + y[1]) + (m1 / 2 + m2 + m3) * g * np.sin(y[0]) - c / L * (y[0] + y[1])
-    b2 = (y[2] ** 2) * m3 * L * np.sin(y[0] + y[1]) + m3 * g * np.sin(y[1]) - c / R * (y[0] + y[1])
+    b1 = (y[3] ** 2) * m3 * R * np.sin(y[0] + y[1]) - (m1 / 2 + m2 + m3) * g * np.sin(y[0]) - c / L * (y[0] + y[1])
+    b2 = (y[2] ** 2) * m3 * L * np.sin(y[0] + y[1]) - m3 * g * np.sin(y[1]) - c / R * (y[0] + y[1])
 
     dy = np.zeros(4)
     dy[0] = y[2]
@@ -41,8 +43,8 @@ def odesys(y, t):
 
     return dy
 
+
 # Численное решение системы ДУ
-phi_0, psi_0, d_phi_0, d_psi_0 = 0, 0, 0.5, -0.5
 equation_start_values = [phi_0, psi_0, d_phi_0, d_psi_0]
 equation_values = odeint(odesys, equation_start_values, time_range)
 
@@ -54,10 +56,10 @@ d_psi = np.array(equation_values[:, 3])
 d_d_phi = np.array([odesys(y, t)[2] for y, t in zip(equation_values, time_range)])
 d_d_psi = np.array([odesys(y, t)[3] for y, t in zip(equation_values, time_range)])
 
-# Вычисление реакции пружины
+# Вычисление реакции шарнира
 R_x = (
         - (m1 / 2 + m2 + m3) * L * (d_d_phi * np.sin(phi) + (d_phi ** 2) * np.cos(phi))
-        + m3 * R * (d_d_psi * np.sin(psi) + (d_psi ** 2) * np.cos(psi)) - (m1 + m2 + m3) * g
+        + m3 * R * (d_d_psi * np.sin(psi) + (d_psi ** 2) * np.cos(psi)) + (m1 + m2 + m3) * g
 )
 R_y = (
     (m1 / 2 + m2 + m3) * L * (d_d_phi * np.cos(phi) - (d_phi ** 2) * np.sin(phi))
@@ -147,7 +149,10 @@ def animate_plot(frame_number):
     disk.set_data([x_disk + x_disk_middle_rotated], [y_disk + y_disk_middle_rotated])
     rod_oc.set_data([x_disk_middle, x_disk_middle_rotated], [0, y_disk_middle_rotated])
     ca_rotated_x, ca_rotated_y = rotate_2d(0, R, psi[frame_number])
-    rod_ca.set_data([x_disk_middle_rotated, ca_rotated_x + x_disk_middle_rotated], [y_disk_middle_rotated, ca_rotated_y + y_disk_middle_rotated])
+    rod_ca.set_data(
+        [x_disk_middle_rotated, ca_rotated_x + x_disk_middle_rotated],
+        [y_disk_middle_rotated, ca_rotated_y + y_disk_middle_rotated]
+    )
     point_a.set_data([ca_rotated_x + x_disk_middle_rotated], [ca_rotated_y + y_disk_middle_rotated])
     hinge.set_data([x_disk_middle_rotated], [y_disk_middle_rotated])
     x_spiral_spring_rotated, y_spiral_spring_rotated = rotate_2d(x_spiral_spring, y_spiral_spring, psi[frame_number])
