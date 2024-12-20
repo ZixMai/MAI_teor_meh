@@ -1,12 +1,10 @@
 """Lab work 2"""
-import sympy as sp
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib import use as fix_ui
 import numpy as np
 
 fix_ui('TkAgg')
-t = sp.Symbol('t')
 
 def rotate_2d(x, y, alpha):
     """Поворот в двухмерном пространстве"""
